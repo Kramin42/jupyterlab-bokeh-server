@@ -56,7 +56,7 @@ export class BokehDashboard extends MainAreaWidget<IFrame> {
     }
     // Make sure the inactive panel is hidden
     this._inactivePanel.style.display = 'none';
-    this.content.url = URLExt.join('/bokeh-dashboard', this.item.route);
+    this.content.url = URLExt.join(ServerConnection.makeSettings({}).baseUrl, '/bokeh-dashboard', this.item.route);
   }
 
   private _item: IDashboardItem | null = null;
@@ -87,7 +87,7 @@ export class BokehDashboardLauncher extends Widget {
       {},
       this._connection
     ).then(response => {
-      response.json().then((data: { [x:string]: string }) => {
+      response.json().then((data: { [x: string]: string }) => {
         this._items = [];
         Object.keys(data).forEach(route => {
           this._items.push({ label: data[route], route });

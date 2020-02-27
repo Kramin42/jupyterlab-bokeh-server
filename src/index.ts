@@ -5,7 +5,7 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
-import { InstanceTracker } from '@jupyterlab/apputils';
+import { WidgetTracker } from '@jupyterlab/apputils';
 
 import { BokehDashboard, BokehDashboardLauncher, IDashboardItem } from './dashboard';
 
@@ -38,7 +38,7 @@ const extension: JupyterFrontEndPlugin<void> = {
     labShell.add(sidebar, 'left');
 
     // An instance tracker which is used for state restoration.
-    const tracker = new InstanceTracker<BokehDashboard>({
+    const tracker = new WidgetTracker<BokehDashboard>({
       namespace: 'bokeh-dashboard-launcher'
     });
 
@@ -52,12 +52,16 @@ const extension: JupyterFrontEndPlugin<void> = {
           return !!(w && w.item && w.item.route === item.route);
         });
         if (w) {
+          if (!w.isAttached) {
+            labShell.add(w, 'main');
+          }
           labShell.activateById(w.id);
           return;
         }
 
         const widget = new BokehDashboard();
         widget.title.label = item.label;
+        widget.title.icon = 'bokeh-ChartIcon';
         widget.item = item;
         labShell.add(widget, 'main');
         tracker.add(widget);
@@ -69,8 +73,8 @@ const extension: JupyterFrontEndPlugin<void> = {
       restorer.add(sidebar, sidebar.id);
       restorer.restore(tracker, {
         command: COMMAND_ID,
-        args: widget => widget.item,
-        name: widget => widget.item && widget.item.route
+        args: widget => widget.item || {},
+        name: widget => (widget.item && widget.item.route) || ''
       });
     }
 

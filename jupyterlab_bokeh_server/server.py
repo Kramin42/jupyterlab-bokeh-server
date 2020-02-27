@@ -6,6 +6,12 @@ import random
 import sys
 import time
 
+import threading
+from functools import partial
+from tornado import gen
+from microspec_api import system_api
+
+session_index = 0
 
 def lineplot(doc):
     fig = figure(title="Line plot!", sizing_mode="stretch_both", x_axis_type="datetime")
@@ -17,14 +23,35 @@ def lineplot(doc):
 
     y = 0
 
-    def cb():
-        nonlocal y
-        now = time.time() * 1000  # bokeh measures in ms
-        y += random.random() - 0.5
+    @gen.coroutine
+    def update(data):
+        source.stream(dict(x=[data['time']*1000], y=[data['value']]))
 
-        source.stream({"x": [now], "y": [y]}, 100)
+    global session_index
+    session_index+=1
+    this_sess_i = session_index
+    
+    def on_data(data):
+        if data['name'] == 'temperature':
+            print('tick', this_sess_i)
+            doc.add_next_tick_callback(partial(update, data))
 
-    doc.add_periodic_callback(cb, 100)
+    status_mon = system_api.StatusMonitor(on_data)
+
+    def on_destroyed(sessctx):
+        print('stopping session', this_sess_i)
+        status_mon.close()
+
+    doc.on_session_destroyed(on_destroyed)
+
+    # def cb():
+    #     nonlocal y
+    #     now = time.time() * 1000  # bokeh measures in ms
+    #     y += random.random() - 0.5
+
+    #     source.stream({"x": [now], "y": [y]}, 100)
+
+    # doc.add_periodic_callback(cb, 100)
 
 
 def histogram(doc):
