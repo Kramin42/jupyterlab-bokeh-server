@@ -22,6 +22,8 @@ from bokeh.server.server import Server
 from panel.io import state
 from panel.io.server import INDEX_HTML
 
+print('Loading Bokeh Dashboards...')
+
 def _eval_panel(panel, server_id, title, doc):
     from panel.template import Template
     from panel.pane import panel as as_panel
@@ -126,11 +128,12 @@ routes = {
 }
 
 import sys
-sys.path.append('/home/xilinx/dashlib')
 from os.path import dirname, basename, isfile, join
+from os import getcwd
+print('working directory:', getcwd())
 import glob
 import importlib.util
-dashboard_modules = glob.glob(join('/home/xilinx/dashboards', '*.py'))
+dashboard_modules = glob.glob(join('dashboards', '*.py'))
 for file_path in dashboard_modules:
     file_name = basename(file_path)
     module_name = file_name.replace('.py', '')
