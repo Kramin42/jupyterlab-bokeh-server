@@ -34,7 +34,7 @@ const extension: JupyterFrontEndPlugin<void> = {
     });
     sidebar.id = 'bokeh-dashboard-launcher';
     sidebar.title.iconClass ='bokeh-ChartIcon jp-SideBar-tabIcon';
-    sidebar.title.caption = 'My Cool Plots';
+    sidebar.title.caption = 'Dashboard Apps';
     labShell.add(sidebar, 'left');
 
     // An instance tracker which is used for state restoration.
@@ -43,7 +43,7 @@ const extension: JupyterFrontEndPlugin<void> = {
     });
 
     app.commands.addCommand(COMMAND_ID, {
-      label: 'Open Bokeh document',
+      label: 'Open Dashboard App',
       execute: args => {
         const item = args as IDashboardItem;
         // If we already have a dashboard open to this url, activate it

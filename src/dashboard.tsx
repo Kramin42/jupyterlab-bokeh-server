@@ -36,10 +36,12 @@ export class BokehDashboard extends MainAreaWidget<IFrame> {
     return this._item;
   }
   set item(value: IDashboardItem | null) {
+    console.log('setting dashboard item:', value);
     if (JSONExt.deepEqual(value, this._item)) {
       return;
     }
     this._item = value;
+    console.log('updating dashboard item:', value);
     this.update();
   }
 
@@ -47,6 +49,7 @@ export class BokehDashboard extends MainAreaWidget<IFrame> {
    * Handle an update request to the dashboard panel.
    */
   protected onUpdateRequest(): void {
+    console.log('onUpdateRequest called with item:', this.item);
     // If there is nothing to show, empty the iframe URL and
     // show the inactive panel.
     if (!this.item) {
@@ -56,7 +59,9 @@ export class BokehDashboard extends MainAreaWidget<IFrame> {
     }
     // Make sure the inactive panel is hidden
     this._inactivePanel.style.display = 'none';
-    this.content.url = URLExt.join(ServerConnection.makeSettings({}).baseUrl, '/bokeh-dashboard', this.item.route);
+    if (this.content.url=='') {
+      this.content.url = URLExt.join(ServerConnection.makeSettings({}).baseUrl, '/bokeh-dashboard', this.item.route);
+    }
   }
 
   private _item: IDashboardItem | null = null;
