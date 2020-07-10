@@ -1,18 +1,6 @@
-from bokeh.server.server import Server
-from bokeh.plotting import figure, ColumnDataSource
 from tornado import web
-
-import random
 import sys
 import time
-
-import numpy as np
-
-import threading
-from functools import partial
-from tornado import gen
-from microspec_api import system_api
-
 import signal
 import uuid
 from functools import partial
@@ -127,7 +115,6 @@ def get_server_custom(panel, port=0, websocket_origin=None, loop=None,
 routes = {
 }
 
-import sys
 from os.path import dirname, basename, isfile, join
 from os import getcwd
 print('working directory:', getcwd())
