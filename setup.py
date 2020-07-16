@@ -13,7 +13,8 @@ setuptools.setup(
     install_requires=[
         'jupyter-server-proxy',
         'bokeh',
-        'panel'
+        'panel',
+        'pandas'
     ],
     entry_points={
         'jupyter_serverproxy_servers': [

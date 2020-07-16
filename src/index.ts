@@ -5,13 +5,17 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
-import { WidgetTracker } from '@jupyterlab/apputils';
+import { WidgetTracker, ICommandPalette } from '@jupyterlab/apputils';
 
 import { BokehDashboard, BokehDashboardLauncher, IDashboardItem } from './dashboard';
 
+import { URLExt } from '@jupyterlab/coreutils';
+import { ServerConnection } from '@jupyterlab/services';
+
 import '../style/index.css';
 
-const COMMAND_ID = 'bokeh-server:launch-document';
+const LAUNCH_COMMAND_ID = 'bokeh-server:launch-document';
+const RELOAD_COMMAND_ID = 'bokeh-server:reload';
 
 /**
  * Initialization data for the jupyterlab-bokeh-server extension.
@@ -19,17 +23,18 @@ const COMMAND_ID = 'bokeh-server:launch-document';
 const extension: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab-bokeh-server',
   autoStart: true,
-  requires: [ILabShell],
+  requires: [ILabShell, ICommandPalette],
   optional: [ILayoutRestorer],
   activate: (
     app: JupyterFrontEnd,
     labShell: ILabShell,
+    palette: ICommandPalette,
     restorer: ILayoutRestorer | null
   ) => {
 
     const sidebar = new BokehDashboardLauncher({
       launchItem: (item: IDashboardItem) => {
-        app.commands.execute(COMMAND_ID, item);
+        app.commands.execute(LAUNCH_COMMAND_ID, item);
       }
     });
     sidebar.id = 'bokeh-dashboard-launcher';
@@ -42,7 +47,7 @@ const extension: JupyterFrontEndPlugin<void> = {
       namespace: 'bokeh-dashboard-launcher'
     });
 
-    app.commands.addCommand(COMMAND_ID, {
+    app.commands.addCommand(LAUNCH_COMMAND_ID, {
       label: 'Open Dashboard App',
       execute: args => {
         const item = args as IDashboardItem;
@@ -68,11 +73,34 @@ const extension: JupyterFrontEndPlugin<void> = {
       }
     });
 
+    app.commands.addCommand(RELOAD_COMMAND_ID, {
+      label: 'Reload Dashboards',
+      execute: () => {
+        console.log(`Reloading Dashboards`);
+        let connection = ServerConnection.makeSettings({});
+        ServerConnection.makeRequest(
+          URLExt.join(connection.baseUrl, '/bokeh-dashboard/reload'),
+          {},
+          connection
+        ).then(response => {
+          response.json().then((data: { [x: string]: string }) => {
+            console.log(`reloading status: ${data.status}`);
+          });
+        });
+      }
+    });
+
+    palette.addItem({
+      command: RELOAD_COMMAND_ID,
+      category: 'dashboards',
+      args: {}
+    });
+
     if (restorer) {
       // Add state restoration for the dashboard items.
       restorer.add(sidebar, sidebar.id);
       restorer.restore(tracker, {
-        command: COMMAND_ID,
+        command: LAUNCH_COMMAND_ID,
         args: widget => widget.item || {},
         name: widget => (widget.item && widget.item.route) || ''
       });
